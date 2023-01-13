@@ -16,14 +16,22 @@ public class VST3forMetasound : ModuleRules
 			}
 		);
 
-
+		string ThirdPartyPath = Path.GetFullPath(Path.Combine(PluginDirectory, "./ThirdParty/"));
 		PrivateIncludePaths.AddRange(
-			new string[]
+			new[]
 			{
-				Path.GetFullPath(Path.Combine(PluginDirectory, "./ThirdParty/"))
+				ThirdPartyPath
 			}
 		);
 
+
+		string ConfigName = Target.Configuration == UnrealTargetConfiguration.Shipping ? "Release" : "Debug";
+		string Vst3SdkLibraryPath = Path.Combine(ThirdPartyPath, "vst3sdk", "lib", ConfigName);
+		System.Console.WriteLine(Vst3SdkLibraryPath);
+		PublicAdditionalLibraries.AddRange(new[]
+		{
+			Path.Combine(Vst3SdkLibraryPath, "base.lib"),
+		});
 
 		PublicDependencyModuleNames.AddRange(
 			new string[]
