@@ -20,7 +20,7 @@ public class VST3forMetasound : ModuleRules
 		PrivateIncludePaths.AddRange(
 			new string[]
 			{
-				Path.GetFullPath(Path.Combine(PluginDirectory, "./ThirdParty/");
+				Path.GetFullPath(Path.Combine(PluginDirectory, "./ThirdParty/"))
 			}
 		);
 
