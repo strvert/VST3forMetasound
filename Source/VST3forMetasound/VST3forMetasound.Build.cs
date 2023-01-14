@@ -48,6 +48,9 @@ public class VST3forMetasound : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
+				"MetasoundGraphCore",
+				"MetasoundFrontend",
+				"MetasoundStandardNodes",
 			}
 		);
 	}
