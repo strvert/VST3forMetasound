@@ -1,5 +1,3 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 #include "VST3forMetasoundEditor.h"
 #include "AssetTypeActions_VST3Plugin.h"
 #include "IAssetTools.h"

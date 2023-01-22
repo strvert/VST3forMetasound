@@ -1,5 +1,3 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 #include "VST3Library/Public/VST3Library.h"
 
 #include "Logging/LogMacros.h"

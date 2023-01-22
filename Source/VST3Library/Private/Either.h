@@ -1,3 +1,10 @@
+
+/**
+ *  Copyright (c) 2019 hotwatermorning
+ *  Released under the MIT license
+ *  https://github.com/hotwatermorning/Vst3SampleHost/blob/master/LICENSE.txt
+ */
+
 #pragma once
 #include <variant>
 

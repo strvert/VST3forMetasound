@@ -1,5 +1,3 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 #include "VST3forMetasound.h"
 
 #include "MetasoundDataTypeRegistrationMacro.h"
