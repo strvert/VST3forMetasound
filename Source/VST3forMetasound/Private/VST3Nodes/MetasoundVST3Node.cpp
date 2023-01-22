@@ -1,3 +1,5 @@
+#include <fstream>
+
 #include "MetasoundAudioBuffer.h"
 #include "MetasoundBuilderInterface.h"
 #include "MetasoundExecutableOperator.h"
@@ -5,10 +7,12 @@
 #include "MetasoundDataReference.h"
 #include "MetasoundFacade.h"
 #include "MetasoundNodeRegistrationMacro.h"
-#include "MetasoundPrimitives.h"
 #include "MetasoundParamHelper.h"
+#include "MetasoundPrimitives.h"
 #include "MetasoundStandardNodesCategories.h"
-#include "MetasoundStandardNodesNames.h"
+#include "VST3forMetasound.h"
+#include "VST3Library.h"
+#include "VST3PluginAsset.h"
 
 #define LOCTEXT_NAMESPACE "FVST3InstrumentSourceNode"
 
@@ -18,6 +22,9 @@ namespace Metasound
 
 	namespace VST3InstrumentSourceNodeNames
 	{
+		METASOUND_PARAM(TriggerAttack, "Attack", "Trigger attack");
+		METASOUND_PARAM(TriggerRelease, "Release", "Trigger release");
+		METASOUND_PARAM(VST3Plugin, "VST3Plugin", "VST3 Plugin");
 		METASOUND_PARAM(MidiNote, "MidiNote", "Instrument Plugin に入力する MIDI Note Number");
 		METASOUND_PARAM(Audio, "Audio", "Instrument Plugin の出力オーディオ");
 	}
@@ -26,24 +33,37 @@ namespace Metasound
 	{
 	public:
 		FVST3InstrumentSourceOperator(const FOperatorSettings& InSettings,
+		                              const FTriggerReadRef& InTriggerAttack,
+		                              const FTriggerReadRef& InTriggerRelease,
+		                              const FVST3PluginAssetReadRef& InVST3Plugin,
 		                              const TDataReadReference<MIDINoteValueType>& InMidiNote);
 
 		void Execute()
 		{
-			const float OneOverSampleRate = 1.0f / SampleRate;
-			constexpr float Frequency = 440.0f;
-			const float DeltaPhase = Frequency * OneOverSampleRate;
-
-			static constexpr float TwoPi = 2.f * PI;
-			float* OutputBuffer = AudioBuffer->GetData();
-			const int32 NumSampleIndex = AudioBuffer->Num();
-
-			for (int32 Index = 0; Index < NumSampleIndex; Index++)
+			if (bWritten)
 			{
-				OutputBuffer[Index] = FMath::Sin(Phase * TwoPi);
-				Phase += DeltaPhase;
+				FMemory::Memzero(AudioBuffer->GetData(), sizeof(float) * AudioBuffer->Num());
+				bWritten = false;
 			}
 
+			const auto GetLastIndex = [this](const FTriggerReadRef& Trigger)
+			{
+				auto PreTrigger = [](int32, int32)
+				{
+				};
+
+				auto OnTrigger = [this](int32 StartFrame, int32 EndFrame)
+				{
+					const FVST3PluginProxyPtr Proxy = VST3PluginRef->GetVST3PluginProxy();
+					if (Proxy.IsValid())
+					{
+					}
+				};
+
+				Trigger->ExecuteBlock(PreTrigger, OnTrigger);
+			};
+
+			GetLastIndex(TriggerAttackRef);
 		}
 
 		static const FNodeClassMetadata& GetNodeInfo()
@@ -74,14 +94,19 @@ namespace Metasound
 		static const FVertexInterface& DeclareVertexInterface()
 		{
 			using namespace VST3InstrumentSourceNodeNames;
+
 			static const FVertexInterface Interface(
 				FInputVertexInterface(
+					TInputDataVertex<FTrigger>(METASOUND_GET_PARAM_NAME_AND_METADATA(TriggerAttack)),
+					TInputDataVertex<FTrigger>(METASOUND_GET_PARAM_NAME_AND_METADATA(TriggerRelease)),
+					TInputDataVertex<FVST3PluginAsset>(METASOUND_GET_PARAM_NAME_AND_METADATA(VST3Plugin)),
 					TInputDataVertex<MIDINoteValueType>(METASOUND_GET_PARAM_NAME_AND_METADATA(MidiNote))
 				),
 				FOutputVertexInterface(
 					TOutputDataVertex<FAudioBuffer>(METASOUND_GET_PARAM_NAME_AND_METADATA(Audio))
 				)
 			);
+
 			return Interface;
 		}
 
@@ -98,23 +123,41 @@ namespace Metasound
 			TDataReadReference<MIDINoteValueType> InMidiNote
 				= InputCollection.GetDataReadReferenceOrConstructWithVertexDefault<MIDINoteValueType>(
 					InputInterface, METASOUND_GET_PARAM_NAME(MidiNote), InParams.OperatorSettings);
+			FVST3PluginAssetReadRef InVST3Plugin
+				= InputCollection.GetDataReadReferenceOrConstruct<FVST3PluginAsset>(
+					METASOUND_GET_PARAM_NAME(VST3Plugin));
+			FTriggerReadRef InTriggerAttack
+				= InputCollection.GetDataReadReferenceOrConstructWithVertexDefault<FTrigger>(
+					InputInterface, METASOUND_GET_PARAM_NAME(TriggerAttack), InParams.OperatorSettings);
+			FTriggerReadRef InTriggerRelease
+				= InputCollection.GetDataReadReferenceOrConstructWithVertexDefault<FTrigger>(
+					InputInterface, METASOUND_GET_PARAM_NAME(TriggerRelease), InParams.OperatorSettings);
 
-			return MakeUnique<FVST3InstrumentSourceOperator>(InParams.OperatorSettings, InMidiNote);
+			return MakeUnique<FVST3InstrumentSourceOperator>(InParams.OperatorSettings, InTriggerAttack,
+			                                                 InTriggerRelease, InVST3Plugin, InMidiNote);
 		}
 
 	private:
+		FTriggerReadRef TriggerAttackRef;
+		FTriggerReadRef TriggerReleaseRef;
+		FVST3PluginAssetReadRef VST3PluginRef;
 		TDataReadReference<MIDINoteValueType> MidiNote;
 
 		FAudioBufferWriteRef AudioBuffer;
 
 		float Phase = 0.0;
 		float SampleRate;
+		bool bWritten;
 	};
 
 	FVST3InstrumentSourceOperator::FVST3InstrumentSourceOperator(
-		const FOperatorSettings& InSettings, const TDataReadReference<MIDINoteValueType>& InMidiNote)
-		: MidiNote(InMidiNote), AudioBuffer(FAudioBufferWriteRef::CreateNew(InSettings)),
-		  SampleRate(InSettings.GetSampleRate())
+		const FOperatorSettings& InSettings, const FTriggerReadRef& InTriggerAttack,
+		const FTriggerReadRef& InTriggerRelease, const FVST3PluginAssetReadRef& InVST3Plugin,
+		const TDataReadReference<MIDINoteValueType>& InMidiNote)
+		: TriggerAttackRef(InTriggerAttack), TriggerReleaseRef(InTriggerRelease), VST3PluginRef(InVST3Plugin),
+		  MidiNote(InMidiNote), AudioBuffer(FAudioBufferWriteRef::CreateNew(InSettings)),
+		  SampleRate(InSettings.GetSampleRate()),
+		  bWritten(true)
 	{
 	}
 
