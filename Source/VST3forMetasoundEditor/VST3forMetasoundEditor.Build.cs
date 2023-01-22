@@ -20,6 +20,8 @@ public class VST3forMetasoundEditor : ModuleRules
 			{
 				"CoreUObject",
 				"Engine",
+				"Slate",
+				"SlateCore",
 				"AssetTools",
 				"UnrealEd",
 				"VST3forMetasound",

@@ -2,6 +2,8 @@
 #include "AssetTypeActions_VST3Plugin.h"
 #include "IAssetTools.h"
 
+DEFINE_LOG_CATEGORY(LogVST3forMetasoundEditor);
+
 #define LOCTEXT_NAMESPACE "FVST3forMetasoundEditorModule"
 
 void FVST3forMetasoundEditorModule::StartupModule()

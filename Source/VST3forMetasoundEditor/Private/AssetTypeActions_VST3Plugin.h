@@ -12,5 +12,6 @@ public:
 	virtual uint32 GetCategories() override;
 	virtual FText GetAssetDescription(const FAssetData& AssetData) const override;
 	virtual UClass* GetSupportedClass() const override;
+	virtual void OpenAssetEditor(const TArray<UObject*>& InObjects, TSharedPtr<IToolkitHost> EditWithinLevelEditor) override;
 	//~ End IAssetTypeActions Implementation
 };

@@ -1,6 +1,8 @@
 #include "AssetTypeActions_VST3Plugin.h"
 
+#include "VST3forMetasound.h"
 #include "VST3forMetasoundEditor.h"
+#include "Toolkits/BaseToolkit.h"
 #include "VST3forMetasound/Public/VST3PluginAsset.h"
 
 #define LOCTEXT_NAMESPACE "AssetTypeActions"
@@ -27,6 +29,40 @@ FText FAssetTypeActions_VST3Plugin::GetAssetDescription(const FAssetData& AssetD
 UClass* FAssetTypeActions_VST3Plugin::GetSupportedClass() const
 {
 	return UVST3PluginAsset::StaticClass();
+}
+
+void FAssetTypeActions_VST3Plugin::OpenAssetEditor(const TArray<UObject*>& InObjects,
+                                                   TSharedPtr<IToolkitHost> EditWithinLevelEditor)
+{
+	TSharedRef<FSimpleAssetEditor> AssetEditor
+		= FSimpleAssetEditor::CreateEditor(EToolkitMode::Standalone, EditWithinLevelEditor, InObjects);
+	TArray<TWeakObjectPtr<UVST3PluginAsset>> SettingAssets = GetTypedWeakObjectPtrs<UVST3PluginAsset>(InObjects);
+
+	if (SettingAssets.Num() == 1)
+	{
+		UE_LOG(LogVST3forMetasoundEditor, Log, TEXT("OpenEditor: %s"), *SettingAssets[0]->PluginPath.FilePath);
+		
+		const TSharedRef<FExtender> ToolbarExtender = MakeShared<FExtender>();
+		ToolbarExtender->AddToolBarExtension(
+			"Asset",
+			EExtensionHook::After,
+			AssetEditor->GetToolkitCommands(),
+			FToolBarExtensionDelegate::CreateLambda([this](FToolBarBuilder& Builder)
+			{
+				Builder.AddToolBarButton(
+					FUIAction(FExecuteAction::CreateLambda([]
+					{
+						
+					})),
+					NAME_None,
+					LOCTEXT("OpenVSTEditor", "Open VST Editor"),
+					LOCTEXT("OpenVSTEditor", "Open VST Editor"),
+					FSlateIcon(FAppStyle::GetAppStyleSetName(), "Icons.OpenInExternalEditor"));
+			}));
+
+		AssetEditor->AddToolbarExtender(ToolbarExtender);
+		AssetEditor->RegenerateMenusAndToolbars();
+	}
 }
 
 #undef LOCTEXT_NAMESPACE

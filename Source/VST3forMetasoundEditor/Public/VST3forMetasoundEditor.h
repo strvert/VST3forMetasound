@@ -3,6 +3,8 @@
 #include "CoreMinimal.h"
 #include "Modules/ModuleInterface.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogVST3forMetasoundEditor, Log, All);
+
 class FVST3forMetasoundEditorModule : public IModuleInterface
 {
 public:
