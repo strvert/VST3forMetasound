@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ClassInfo.h"
+#include "VST3ClassInfo.h"
 
 namespace Steinberg
 {
@@ -26,9 +26,9 @@ public:
 
 	const FVST3ClassInfo& GetComponentInfo(size_t Index) const;
 
-	TUniquePtr<UVST3Plugin> CreateByIndex(size_t Index);
+	TObjectPtr<UVST3Plugin> CreateByIndex(size_t Index) const;
 
-	TUniquePtr<UVST3Plugin> CreateByID(const FVST3ClassInfo::FCID& ComponentId);
+	TObjectPtr<UVST3Plugin> CreateByID(const FCID& ComponentId) const;
 
 	uint32 GetNumLoadedPlugins() const;
 
@@ -42,7 +42,7 @@ class VST3LIBRARY_API FFactoryInfo
 public:
 	FFactoryInfo();
 
-	FFactoryInfo(const Steinberg::PFactoryInfo& info);
+	FFactoryInfo(const Steinberg::PFactoryInfo& Info);
 
 	bool IsDiscardable() const;
 	bool IsLicenseCheck() const;

@@ -1,6 +1,8 @@
 #include "VST3PluginFactory.h"
 
+#include <ranges>
 #include "VST3MAUtils.h"
+#include "VST3Plugin.h"
 #include "public.sdk/source/vst/hosting/module.h"
 #include "pluginterfaces/base/ipluginbase.h"
 
@@ -69,6 +71,11 @@ public:
 		return FactoryInfo;
 	}
 
+	Steinberg::IPluginFactory* GetFactory() const
+	{
+		return Factory.get();
+	}
+
 	size_t GetComponentCount() const
 	{
 		return ClassInfoList.size();
@@ -79,11 +86,25 @@ public:
 		return ClassInfoList[Index];
 	}
 
+	void OnAfterConstruction(TWeakObjectPtr<UVST3Plugin> Plugin)
+	{
+		LoadedPlugins.emplace_back(Plugin);
+		Plugin->GetOnPluginDestruction().AddRaw(this, &FImpl::OnBeforeDestruction);
+	}
+
+	void OnBeforeDestruction(const TWeakObjectPtr<UVST3Plugin> Plugin)
+	{
+		const auto Found = std::find(LoadedPlugins.begin(), LoadedPlugins.end(), Plugin);
+		LoadedPlugins.erase(Found);
+		Plugin->GetOnPluginDestruction().RemoveAll(this);
+	}
+
 private:
 	std::shared_ptr<VST3::Hosting::Module> Module;
 	std::unique_ptr<Steinberg::IPluginFactory, SelfReleaser> Factory;
 	FFactoryInfo FactoryInfo;
 	std::vector<FVST3ClassInfo> ClassInfoList;
+	std::vector<TWeakObjectPtr<UVST3Plugin>> LoadedPlugins;
 };
 
 FVST3PluginFactory::FVST3PluginFactory(const FString& ModulePath)
@@ -105,19 +126,28 @@ size_t FVST3PluginFactory::GetComponentCount() const
 	return PImpl->GetComponentCount();
 }
 
-const FVST3ClassInfo& FVST3PluginFactory::GetComponentInfo(size_t Index) const
+const FVST3ClassInfo& FVST3PluginFactory::GetComponentInfo(const size_t Index) const
 {
 	return PImpl->GetComponentInfo(Index);
 }
 
-TUniquePtr<UVST3Plugin> FVST3PluginFactory::CreateByIndex(size_t Index)
+TObjectPtr<UVST3Plugin> FVST3PluginFactory::CreateByIndex(const size_t Index) const
 {
-	return nullptr;	
+	UVST3Plugin* Plugin = UVST3Plugin::LoadPlugin(PImpl->GetFactory(), GetComponentInfo(Index));
+	PImpl->OnAfterConstruction(Plugin);
+	return Plugin;
 }
 
-TUniquePtr<UVST3Plugin> FVST3PluginFactory::CreateByID(const FVST3ClassInfo::FCID& ComponentId)
+TObjectPtr<UVST3Plugin> FVST3PluginFactory::CreateByID(const FCID& InComponentId) const
 {
-	return nullptr;	
+	for (size_t Index = 0; Index < GetComponentCount(); Index++)
+	{
+		if (InComponentId == GetComponentInfo(Index).GetCID())
+		{
+			return CreateByIndex(Index);
+		}
+	}
+	return nullptr;
 }
 
 uint32 FVST3PluginFactory::GetNumLoadedPlugins() const
@@ -129,11 +159,11 @@ FFactoryInfo::FFactoryInfo(): Flags(0)
 {
 }
 
-FFactoryInfo::FFactoryInfo(Steinberg::PFactoryInfo const& info):
-	Vendor(WCHAR_TO_TCHAR(info.vendor)),
-	Url(WCHAR_TO_TCHAR(info.url)),
-	Email(WCHAR_TO_TCHAR(info.email)),
-	Flags(info.flags)
+FFactoryInfo::FFactoryInfo(Steinberg::PFactoryInfo const& Info):
+	Vendor(WCHAR_TO_TCHAR(Info.vendor)),
+	Url(WCHAR_TO_TCHAR(Info.url)),
+	Email(WCHAR_TO_TCHAR(Info.email)),
+	Flags(Info.flags)
 {
 }
 

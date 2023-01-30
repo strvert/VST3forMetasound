@@ -14,20 +14,39 @@ void FVST3LibraryModule::ShutdownModule()
 {
 }
 
-FVST3PluginFactoryPtr FVST3LibraryModule::FindOrCreatePluginFactory(const FString& PluginPath)
+std::tuple<FVST3ModuleHandle, FVST3PluginFactoryPtr> FVST3LibraryModule::FindOrCreatePluginFactory(
+	const FString& PluginPath)
 {
-	if (TSharedPtr<FVST3PluginFactory>* Factory = InstancedFactories.Find(PluginPath))
+	if (FVST3ModuleHandle* HandlePtr = PathHandleMap.Find(PluginPath))
 	{
-		return *Factory;
+		return {*HandlePtr, *InstancedFactories.Find(*HandlePtr)};
 	}
 
-	return InstancedFactories.Add(PluginPath, MakeShared<FVST3PluginFactory>(PluginPath));
+	const FVST3ModuleHandle NewHandle = FVST3ModuleHandle::NewHandle();
+	FVST3PluginFactoryPtr NewFactory
+		= InstancedFactories.Emplace(NewHandle, MakeShared<FVST3PluginFactory>(PluginPath));
+	PathHandleMap.Emplace(PluginPath, NewHandle);
+	return {NewHandle, NewFactory};
 }
 
 FVST3LibraryModule& FVST3LibraryModule::Get()
 {
 	FVST3LibraryModule& Module = FModuleManager::LoadModuleChecked<FVST3LibraryModule>("VST3Library");
 	return Module;
+}
+
+FString FVST3LibraryModule::GetVST3HostName()
+{
+	return VST3HostName;
+}
+
+FVST3PluginFactoryPtr FVST3LibraryModule::GetModuleFactory(const FVST3ModuleHandle& InHandle)
+{
+	if (FVST3PluginFactoryPtr* Factory = InstancedFactories.Find(InHandle))
+	{
+		return *Factory;
+	}
+	return nullptr;
 }
 
 #undef LOCTEXT_NAMESPACE

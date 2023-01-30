@@ -34,14 +34,12 @@ UClass* FAssetTypeActions_VST3Plugin::GetSupportedClass() const
 void FAssetTypeActions_VST3Plugin::OpenAssetEditor(const TArray<UObject*>& InObjects,
                                                    TSharedPtr<IToolkitHost> EditWithinLevelEditor)
 {
-	TSharedRef<FSimpleAssetEditor> AssetEditor
+	const TSharedRef<FSimpleAssetEditor> AssetEditor
 		= FSimpleAssetEditor::CreateEditor(EToolkitMode::Standalone, EditWithinLevelEditor, InObjects);
 	TArray<TWeakObjectPtr<UVST3PluginAsset>> SettingAssets = GetTypedWeakObjectPtrs<UVST3PluginAsset>(InObjects);
 
 	if (SettingAssets.Num() == 1)
 	{
-		UE_LOG(LogVST3forMetasoundEditor, Log, TEXT("OpenEditor: %s"), *SettingAssets[0]->PluginPath.FilePath);
-		
 		const TSharedRef<FExtender> ToolbarExtender = MakeShared<FExtender>();
 		ToolbarExtender->AddToolBarExtension(
 			"Asset",
