@@ -21,6 +21,11 @@
 			"LoadingPhase": "Default"
 		},
 		{
+			"Name": "VST3LibraryEditor",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		},
+		{
 			"Name": "VST3forMetasound",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"

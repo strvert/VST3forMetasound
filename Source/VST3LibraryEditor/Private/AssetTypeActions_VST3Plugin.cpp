@@ -1,7 +1,6 @@
 #include "AssetTypeActions_VST3Plugin.h"
 
-#include "VST3forMetasound.h"
-#include "VST3forMetasoundEditor.h"
+#include "VST3LibraryEditor.h"
 #include "Toolkits/BaseToolkit.h"
 #include "VST3PluginAsset.h"
 
