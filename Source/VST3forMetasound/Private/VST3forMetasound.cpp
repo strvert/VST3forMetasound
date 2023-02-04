@@ -1,7 +1,7 @@
 #include "VST3forMetasound.h"
 
 #include "MetasoundDataTypeRegistrationMacro.h"
-#include "VST3PluginAsset.h"
+#include "VST3PluginAssetProxy.h"
 #include "VST3PluginLibrary.h"
 
 #define LOCTEXT_NAMESPACE "FVST3forMetasoundModule"
@@ -15,9 +15,9 @@ void FVST3forMetasoundModule::StartupModule()
 {
 	FMetasoundFrontendRegistryContainer::Get()->RegisterPendingNodes();
 
-	FVST3ModuleHandle ModuleHandle = UVST3PluginLibrary::LoadVST3Module(
-		R"(E:\UnrealProjects\Metasounds\Plugins\VST3forMetasound\ThirdParty\vst3sdk\build\VST3\Release\noteexpressionsynth.vst3\Contents\x86_64-win\noteexpressionsynth.vst3)"
-	);
+	// FVST3ModuleHandle ModuleHandle = UVST3PluginLibrary::LoadVST3Module(
+	// 	R"(E:\UnrealProjects\Metasounds\Plugins\VST3forMetasound\ThirdParty\vst3sdk\build\VST3\Release\noteexpressionsynth.vst3\Contents\x86_64-win\noteexpressionsynth.vst3)"
+	// );
 
 }
 

@@ -12,7 +12,7 @@ public class VST3forMetasound : ModuleRules
 			new string[]
 			{
 				"Core",
-				"MetasoundGraphCore",
+				"MetasoundGraphCore", "VST3Library",
 			}
 		);
 

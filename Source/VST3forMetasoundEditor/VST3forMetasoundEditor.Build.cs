@@ -12,6 +12,7 @@ public class VST3forMetasoundEditor : ModuleRules
 			new string[]
 			{
 				"Core",
+				"VST3Library"
 			}
 		);
 

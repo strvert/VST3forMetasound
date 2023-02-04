@@ -3,7 +3,7 @@
 #include "VST3forMetasound.h"
 #include "VST3forMetasoundEditor.h"
 #include "Toolkits/BaseToolkit.h"
-#include "VST3forMetasound/Public/VST3PluginAsset.h"
+#include "VST3PluginAsset.h"
 
 #define LOCTEXT_NAMESPACE "AssetTypeActions"
 

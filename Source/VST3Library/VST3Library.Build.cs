@@ -72,6 +72,7 @@ public class VST3Library: ModuleRules
 			{
 				"CoreUObject",
 				"Engine",
+				"AudioExtensions"
 			}
 		);
 	}

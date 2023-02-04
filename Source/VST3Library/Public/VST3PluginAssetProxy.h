@@ -2,9 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "IAudioProxyInitializer.h"
-#include "MetasoundDataReferenceMacro.h"
 #include "Engine/DataAsset.h"
-#include "VST3PluginAsset.generated.h"
 
 
 class UVST3PluginAsset;
@@ -12,7 +10,7 @@ class FVST3PluginProxy;
 
 using FVST3PluginProxyPtr = TSharedPtr<FVST3PluginProxy, ESPMode::ThreadSafe>;
 
-class VST3FORMETASOUND_API FVST3PluginProxy final : public Audio::TProxyData<FVST3PluginProxy>
+class VST3LIBRARY_API FVST3PluginProxy final : public Audio::TProxyData<FVST3PluginProxy>
 {
 public:
 	IMPL_AUDIOPROXY_CLASS(FVST3PluginProxy);
@@ -37,19 +35,7 @@ private:
 };
 
 
-UCLASS(BlueprintType)
-class VST3FORMETASOUND_API UVST3PluginAsset : public UDataAsset, public IAudioProxyDataFactory
-{
-	GENERATED_BODY()
-
-public:
-	virtual TUniquePtr<Audio::IProxyData> CreateNewProxyData(const Audio::FProxyDataInitParams& InitParams) override;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Plugin Properties")
-	FFilePath PluginPath;
-};
-
-class VST3FORMETASOUND_API FVST3PluginAsset
+class VST3LIBRARY_API FVST3PluginAsset
 {
 	FVST3PluginProxyPtr VST3PluginProxy;
 
@@ -75,6 +61,3 @@ public:
 		return VST3PluginProxy;
 	}
 };
-
-DECLARE_METASOUND_DATA_REFERENCE_TYPES(FVST3PluginAsset, VST3FORMETASOUND_API, FVST3PluginAssetTypeInfo,
-                                       FVST3PluginAssetReadRef, FVST3PluginAssetWriteRef)

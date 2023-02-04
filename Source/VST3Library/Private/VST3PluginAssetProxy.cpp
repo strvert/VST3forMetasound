@@ -1,3 +1,4 @@
+#include "VST3PluginAssetProxy.h"
 #include "VST3PluginAsset.h"
 
 
